@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="your-styles.css">
+    <style>
+        /* Add your styles for the classes here */
+    </style>
+    <title>Movie Booking System</title>
+</head>
+<body>
+
+<!-- Slide 1: Movie Posters -->
+<div class="c_slide1-frame">
+    <h1>All Movies</h1>
+    <!-- Display movie posters, names, and search tab -->
+    <div class="c_slide1-posters" id="moviePosters">
+        <!-- Movie posters will be added dynamically using AJAX -->
+    </div>
+    <input type="text" placeholder="Search..." oninput="searchMovies(this.value)">
+</div>
+
+<!-- Slide 2: Movie Information -->
+<div class="c_slide2-frame" id="movieInformation">
+    <!-- Movie information will be displayed dynamically here -->
+</div>
+
+<!-- Slide 3: Movie Seats -->
+<div class="c_slide3-frame">
+    <h1>Choose Your Seats</h1>
+    <!-- Display movie seats, reserved seats in blue, selected in purple, and available in yellow -->
+    <form method="post" action="">
+        <div class="c_slide3-seats" id="seatSelection">
+            <!-- Seat selection interface will be added dynamically using AJAX -->
+        </div>
+        <button type="button" onclick="continueToPayment()">Continue</button>
+    </form>
+</div>
+
+<!-- Slide 4: Confirmation -->
+<div class="c_slide4-frame" id="confirmation">
+    <!-- Confirmation details will be displayed dynamically here -->
+</div>
+
+<!-- Slide 5: Ticket Information -->
+<div class="c_slide5-frame" id="ticketInformation">
+    <!-- Ticket information will be displayed dynamically here -->
+</div>
+
+<!-- Your JavaScript functions -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    // Fetch movies using AJAX
+    function fetchMovies() {
+        $.ajax({
+            url: 'api/movies.php',
+            type: 'GET',
+            dataType: 'json',
+            success: function (movies) {
+                const moviePostersContainer = $('#moviePosters');
+                movies.forEach(movie => {
+                    const posterDiv = $('<div class="c_slide1-poster">')
+                        .html(`<img src="${movie.poster}" alt="${movie.name} Poster">
+                                <p>${movie.name}</p>`)
+                        .click(() => displayMovieInformation(movie.id));
+                    moviePostersContainer.append(posterDiv);
+                });
+            }
+        });
+    }
+
+    // Display movie information when a poster is clicked
+    function displayMovieInformation(movieId) {
+        $.ajax({
+            url: `api/movie-details.php?id=${movieId}`,
+            type: 'GET',
+            dataType: 'json',
+            success: function (movieDetails) {
+                const movieInformationContainer = $('#movieInformation');
+                movieInformationContainer.html(`<h1>${movieDetails.name}</h1>
+                                               <div class="c_slide2-info">
+                                                 <img src="${movieDetails.poster}" alt="${movieDetails.name} Poster">
+                                                 <div class="c_slide2-details">
+                                                   <h2>${movieDetails.name}</h2>
+                                                   <p>Cast: ${movieDetails.cast}</p>
+                                                   <p>Cinema: ${movieDetails.cinema}</p>
+                                                 </div>
+                                               </div>`);
+            }
+        });
+    }
+
+    // Continue to the payment process
+    function continueToPayment() {
+        const selectedSeats = $('.c_slide3-seat.c_selected').map(function () {
+            return $(this).text();
+        }).get();
+
+        $.ajax({
+            url: 'api/process-payment.php',
+            type: 'POST',
+            data: { selectedSeats: selectedSeats.join(',') },
+            success: function (response) {
+                // Handle the response from the server if needed
+                alert('Continue to payment...');
+            }
+        });
+    }
+
+    // Initialize the page
+    fetchMovies();
+</script>
+
+</body>
+</html>
+
